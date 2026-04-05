@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Priority Dashboard</title>
+  <meta name="description" content="Smart student assignment priority dashboard — prioritize your study tasks based on urgency, difficulty, and exam importance.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.7);
+      --bg-glass: rgba(255, 255, 255, 0.03);
+      --border-glass: rgba(255, 255, 255, 0.06);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      --gradient-competitive: linear-gradient(135deg, #f59e0b, #ef4444);
+      --gradient-college: linear-gradient(135deg, #10b981, #3b82f6);
+      --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.15);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(139,92,246,0.06) 0%, transparent 50%),
+                  radial-gradient(circle at 40% 80%, rgba(236,72,153,0.04) 0%, transparent 50%);
+      animation: bgShift 20s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    @keyframes bgShift {
+      0%, 100% { transform: translate(0,0) rotate(0deg); }
+      33% { transform: translate(2%,-1%) rotate(1deg); }
+      66% { transform: translate(-1%,2%) rotate(-1deg); }
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 3rem; animation: fadeInDown 0.8s ease-out; }
+
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--bg-glass); border: 1px solid var(--border-glass);
+      border-radius: 100px; padding: 0.4rem 1.2rem;
+      font-size: 0.75rem; font-weight: 500; color: var(--accent-blue);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 1.5rem; backdrop-filter: blur(10px);
+    }
+    .header-badge .dot { width: 6px; height: 6px; background: var(--accent-emerald); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.8); } }
+
+    .header h1 {
+      font-size: 2.8rem; font-weight: 800;
+      background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1.2; margin-bottom: 0.75rem;
+    }
+    .header p { color: var(--text-secondary); font-size: 1.05rem; max-width: 500px; margin: 0 auto; }
+
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; margin-bottom: 2.5rem; animation: fadeInUp 0.8s ease-out 0.2s both; }
+
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border-glass);
+      border-radius: 16px; padding: 1.5rem; backdrop-filter: blur(20px);
+      transition: all 0.3s ease; position: relative; overflow: hidden;
+    }
+    .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; border-radius:16px 16px 0 0; }
+    .stat-card:nth-child(1)::before { background: var(--gradient-primary); }
+    .stat-card:nth-child(2)::before { background: var(--gradient-competitive); }
+    .stat-card:nth-child(3)::before { background: var(--gradient-college); }
+    .stat-card:nth-child(4)::before { background: linear-gradient(135deg, #ef4444, #ec4899); }
+    .stat-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.1); box-shadow: var(--shadow-glow); }
+
+    .stat-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; margin-bottom:1rem; font-size:1.3rem; }
+    .stat-card:nth-child(1) .stat-icon { background:rgba(59,130,246,0.15); color:var(--accent-blue); }
+    .stat-card:nth-child(2) .stat-icon { background:rgba(245,158,11,0.15); color:var(--accent-amber); }
+    .stat-card:nth-child(3) .stat-icon { background:rgba(16,185,129,0.15); color:var(--accent-emerald); }
+    .stat-card:nth-child(4) .stat-icon { background:rgba(239,68,68,0.15); color:var(--accent-red); }
+
+    .stat-label { font-size:0.8rem; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.35rem; }
+    .stat-value { font-size:2rem; font-weight:800; color:var(--text-primary); line-height:1; }
+
+    /* Section Header */
+    .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; animation: fadeInUp 0.8s ease-out 0.4s both; }
+    .section-title { font-size:1.3rem; font-weight:700; }
+
+    .header-actions { display:flex; gap:0.75rem; }
+
+    .btn {
+      display:flex; align-items:center; gap:0.5rem;
+      border:1px solid var(--border-glass); border-radius:10px;
+      padding:0.6rem 1.2rem; font-family:inherit; font-size:0.85rem;
+      font-weight:500; cursor:pointer; transition:all 0.3s ease;
+      backdrop-filter:blur(10px);
+    }
+    .btn .material-icons-round { font-size:1.1rem; }
+
+    .btn-ghost { background:var(--bg-glass); color:var(--text-secondary); }
+    .btn-ghost:hover { background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.3); color:var(--accent-blue); }
+    .btn-ghost:hover .material-icons-round { transform:rotate(180deg); transition:transform 0.5s ease; }
+
+    .btn-primary {
+      background: var(--gradient-primary); color:#fff; border:none;
+      box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+    }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 25px rgba(59,130,246,0.4); }
+
+    /* Task Cards */
+    .tasks-list { display:flex; flex-direction:column; gap:1rem; animation: fadeInUp 0.8s ease-out 0.5s both; }
+
+    .task-card {
+      background:var(--bg-card); border:1px solid var(--border-glass);
+      border-radius:16px; padding:1.5rem 1.75rem; backdrop-filter:blur(20px);
+      display:grid; grid-template-columns: auto 1fr auto auto;
+      align-items:center; gap:1.5rem;
+      transition:all 0.35s ease; position:relative; overflow:hidden;
+      animation: slideIn 0.5s ease-out both;
+    }
+    .task-card:hover { transform:translateX(6px); border-color:rgba(255,255,255,0.1); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+    .task-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:0 4px 4px 0; }
+    .task-card.competitive::before { background: var(--gradient-competitive); }
+    .task-card.college::before { background: var(--gradient-college); }
+    .task-card.overdue::before { background: linear-gradient(to bottom, #ef4444, #dc2626); }
+
+    /* Rank Badge */
+    .rank-badge { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:800; flex-shrink:0; }
+    .task-card:nth-child(1) .rank-badge { background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(239,68,68,0.2)); color:var(--accent-amber); box-shadow:0 0 20px rgba(245,158,11,0.15); }
+    .task-card:nth-child(2) .rank-badge { background:rgba(139,92,246,0.15); color:var(--accent-purple); }
+    .task-card:nth-child(3) .rank-badge { background:rgba(59,130,246,0.15); color:var(--accent-blue); }
+    .task-card:nth-child(n+4) .rank-badge { background:rgba(100,116,139,0.15); color:var(--text-muted); }
+
+    .task-info { min-width:0; }
+    .task-title-row { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem; flex-wrap:wrap; }
+    .task-title { font-size:1.05rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    .track-tag { display:inline-flex; align-items:center; gap:0.3rem; padding:0.2rem 0.7rem; border-radius:100px; font-size:0.65rem; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; flex-shrink:0; }
+    .track-tag.competitive { background:rgba(245,158,11,0.12); color:var(--accent-amber); border:1px solid rgba(245,158,11,0.2); }
+    .track-tag.college { background:rgba(16,185,129,0.12); color:var(--accent-emerald); border:1px solid rgba(16,185,129,0.2); }
+
+    .exam-tag { padding:0.2rem 0.6rem; border-radius:6px; font-size:0.65rem; font-weight:700; background:rgba(139,92,246,0.12); color:var(--accent-purple); border:1px solid rgba(139,92,246,0.2); letter-spacing:0.05em; flex-shrink:0; }
+
+    .task-meta { display:flex; align-items:center; gap:1.25rem; flex-wrap:wrap; }
+    .meta-item { display:flex; align-items:center; gap:0.35rem; font-size:0.8rem; color:var(--text-muted); }
+    .meta-item .material-icons-round { font-size:0.95rem; }
+    .meta-item.urgent { color:var(--accent-red); }
+    .meta-item.soon { color:var(--accent-amber); }
+
+    /* Priority Score */
+    .priority-section { text-align:right; flex-shrink:0; min-width:120px; }
+    .priority-label { font-size:0.7rem; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.3rem; }
+    .priority-score { font-size:1.8rem; font-weight:800; line-height:1; margin-bottom:0.6rem; }
+    .priority-score.high { color:var(--accent-red); }
+    .priority-score.medium { color:var(--accent-amber); }
+    .priority-score.low { color:var(--accent-emerald); }
+    .priority-bar-container { width:100%; height:4px; background:rgba(255,255,255,0.06); border-radius:100px; overflow:hidden; }
+    .priority-bar { height:100%; border-radius:100px; transition:width 1.5s ease-out; width:0; }
+    .priority-bar.high { background:var(--gradient-competitive); }
+    .priority-bar.medium { background:linear-gradient(90deg,var(--accent-amber),var(--accent-pink)); }
+    .priority-bar.low { background:var(--gradient-college); }
+
+    /* Delete Button */
+    .delete-btn {
+      width:36px; height:36px; border-radius:10px; border:1px solid transparent;
+      background:transparent; color:var(--text-muted); cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:all 0.3s ease; flex-shrink:0;
+    }
+    .delete-btn:hover { background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.25); color:var(--accent-red); transform:scale(1.1); }
+    .delete-btn .material-icons-round { font-size:1.1rem; }
+
+    /* Difficulty Stars */
+    .difficulty { display:flex; align-items:center; gap:2px; }
+    .star { font-size:0.75rem; color:var(--text-muted); }
+    .star.filled { color:var(--accent-amber); }
+
+    /* Loading / Empty */
+    .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4rem; gap:1.5rem; }
+    .spinner { width:40px; height:40px; border:3px solid rgba(59,130,246,0.1); border-top-color:var(--accent-blue); border-radius:50%; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-text { color:var(--text-muted); font-size:0.9rem; }
+    .empty-state { text-align:center; padding:4rem 2rem; color:var(--text-muted); }
+    .empty-state .material-icons-round { font-size:3rem; margin-bottom:1rem; opacity:0.3; }
+
+    /* ============ MODAL ============ */
+    .modal-overlay {
+      position: fixed; top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+      z-index: 200; display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden;
+      transition: all 0.35s ease;
+    }
+    .modal-overlay.open { opacity:1; visibility:visible; }
+
+    .modal {
+      background: var(--bg-secondary); border: 1px solid var(--border-glass);
+      border-radius: 20px; width: 95%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+      transform: translateY(30px) scale(0.95);
+      transition: transform 0.35s ease;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+    }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+    .modal-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 1.5rem 1.75rem 0;
+    }
+    .modal-header h2 { font-size:1.4rem; font-weight:700; }
+    .modal-close {
+      width:36px; height:36px; border-radius:10px; border:1px solid var(--border-glass);
+      background:var(--bg-glass); color:var(--text-secondary); cursor:pointer;
+      display:flex; align-items:center; justify-content:center; transition:all 0.3s ease;
+    }
+    .modal-close:hover { background:rgba(239,68,68,0.12); border-color:rgba(239,68,68,0.25); color:var(--accent-red); }
+
+    .modal-body { padding: 1.5rem 1.75rem; }
+
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .form-group { display:flex; flex-direction:column; gap:0.4rem; }
+    .form-group.full-width { grid-column: 1 / -1; }
+
+    .form-label { font-size:0.78rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; }
+    .form-label .required { color:var(--accent-red); margin-left:2px; }
+
+    .form-input, .form-select {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border-glass);
+      border-radius: 10px; padding: 0.7rem 1rem; color:var(--text-primary);
+      font-family:inherit; font-size:0.9rem; transition:all 0.3s ease;
+      outline:none;
+    }
+    .form-input:focus, .form-select:focus { border-color:var(--accent-blue); box-shadow:0 0 0 3px rgba(59,130,246,0.15); }
+    .form-input::placeholder { color:var(--text-muted); }
+    .form-select { cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 1rem center; padding-right:2.5rem; }
+    .form-select option { background:var(--bg-secondary); color:var(--text-primary); }
+
+    /* Difficulty Selector */
+    .difficulty-selector { display:flex; gap:0.4rem; }
+    .diff-btn {
+      width:40px; height:40px; border-radius:10px; border:1px solid var(--border-glass);
+      background:var(--bg-glass); color:var(--text-muted); font-weight:700; font-size:0.9rem;
+      cursor:pointer; transition:all 0.25s ease; font-family:inherit;
+    }
+    .diff-btn:hover { border-color:rgba(245,158,11,0.3); color:var(--accent-amber); }
+    .diff-btn.active { background:rgba(245,158,11,0.15); border-color:rgba(245,158,11,0.4); color:var(--accent-amber); box-shadow:0 0 12px rgba(245,158,11,0.15); }
+
+    /* Weight Slider */
+    .weight-container { display:flex; align-items:center; gap:1rem; }
+    .weight-slider { flex:1; -webkit-appearance:none; appearance:none; height:6px; border-radius:100px; background:rgba(255,255,255,0.08); outline:none; transition:background 0.3s; }
+    .weight-slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:var(--accent-blue); cursor:pointer; box-shadow:0 0 10px rgba(59,130,246,0.3); transition:transform 0.2s; }
+    .weight-slider::-webkit-slider-thumb:hover { transform:scale(1.2); }
+    .weight-value { font-size:1.2rem; font-weight:800; color:var(--accent-blue); min-width:35px; text-align:center; }
+
+    .modal-footer { padding: 0 1.75rem 1.75rem; display:flex; gap:0.75rem; justify-content:flex-end; }
+
+    .btn-cancel {
+      padding:0.7rem 1.4rem; border-radius:10px; border:1px solid var(--border-glass);
+      background:var(--bg-glass); color:var(--text-secondary); font-family:inherit;
+      font-size:0.9rem; font-weight:500; cursor:pointer; transition:all 0.3s ease;
+    }
+    .btn-cancel:hover { background:rgba(255,255,255,0.06); color:var(--text-primary); }
+
+    .btn-submit {
+      padding:0.7rem 1.8rem; border-radius:10px; border:none;
+      background:var(--gradient-primary); color:#fff; font-family:inherit;
+      font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.3s ease;
+      box-shadow:0 4px 15px rgba(59,130,246,0.3);
+      display:flex; align-items:center; gap:0.5rem;
+    }
+    .btn-submit:hover { transform:translateY(-2px); box-shadow:0 6px 25px rgba(59,130,246,0.4); }
+    .btn-submit:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    /* Success Toast */
+    .toast {
+      position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(100px);
+      backdrop-filter:blur(20px); padding:0.8rem 1.5rem; border-radius:12px;
+      font-size:0.85rem; font-weight:500; z-index:300; transition:transform 0.4s ease;
+    }
+    .toast.show { transform:translateX(-50%) translateY(0); }
+    .toast.error { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; }
+    .toast.success { background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); color:#6ee7b7; }
+
+    /* Footer */
+    .footer { text-align:center; padding:3rem 0 1.5rem; color:var(--text-muted); font-size:0.75rem; animation: fadeInUp 0.8s ease-out 1s both; }
+
+    /* Animations */
+    @keyframes fadeInDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes slideIn { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes popIn { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
+
+    /* Responsive */
+    @media (max-width:768px) {
+      .container { padding:1.25rem; }
+      .header h1 { font-size:1.8rem; }
+      .stats-grid { grid-template-columns:repeat(2,1fr); gap:0.75rem; }
+      .stat-card { padding:1.1rem; }
+      .stat-value { font-size:1.5rem; }
+      .task-card { grid-template-columns:auto 1fr auto; gap:1rem; padding:1.25rem; }
+      .priority-section { grid-column:1/-1; text-align:left; display:flex; align-items:center; gap:1rem; }
+      .priority-bar-container { flex:1; }
+      .form-grid { grid-template-columns:1fr; }
+      .section-header { flex-wrap:wrap; gap:0.75rem; }
+    }
+    @media (max-width:480px) { .stats-grid { grid-template-columns:1fr 1fr; } .task-meta { gap:0.75rem; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-badge"><span class="dot"></span>Live Priority Engine</div>
+      <h1>📚 Study Priority Dashboard</h1>
+      <p>Smart assignment prioritization based on urgency, difficulty, and exam importance</p>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-icon"><span class="material-icons-round">assignment</span></div>
+        <div class="stat-label">Total Tasks</div>
+        <div class="stat-value" id="totalTasks">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><span class="material-icons-round">emoji_events</span></div>
+        <div class="stat-label">Competitive</div>
+        <div class="stat-value" id="competitiveTasks">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><span class="material-icons-round">school</span></div>
+        <div class="stat-label">College</div>
+        <div class="stat-value" id="collegeTasks">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><span class="material-icons-round">priority_high</span></div>
+        <div class="stat-label">Urgent</div>
+        <div class="stat-value" id="urgentTasks">—</div>
+      </div>
+    </div>
+
+    <!-- Section Header with Add Button -->
+    <div class="section-header">
+      <h2 class="section-title">Prioritized Tasks</h2>
+      <div class="header-actions">
+        <button class="btn btn-ghost" id="refreshBtn" onclick="loadData()">
+          <span class="material-icons-round">refresh</span> Refresh
+        </button>
+        <button class="btn btn-primary" id="addTaskBtn" onclick="openModal()">
+          <span class="material-icons-round">add</span> Add Task
+        </button>
+      </div>
+    </div>
+
+    <div id="tasksList" class="tasks-list">
+      <div class="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading your priorities...</div>
+      </div>
+    </div>
+
+    <footer class="footer">Student Priority API &middot; Powered by Express + SQLite</footer>
+  </div>
+
+  <!-- ===== ADD TASK MODAL ===== -->
+  <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>➕ Add New Task</h2>
+        <button class="modal-close" onclick="closeModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="addTaskForm" onsubmit="handleSubmit(event)">
+          <div class="form-grid">
+            <!-- Title -->
+            <div class="form-group full-width">
+              <label class="form-label" for="taskTitle">Title <span class="required">*</span></label>
+              <input class="form-input" type="text" id="taskTitle" placeholder="e.g. NIMCET Mock Test 3" required>
+            </div>
+
+            <!-- Track -->
+            <div class="form-group">
+              <label class="form-label" for="taskTrack">Track <span class="required">*</span></label>
+              <select class="form-select" id="taskTrack" required onchange="handleTrackChange()">
+                <option value="">Select track</option>
+                <option value="COMPETITIVE">🏆 Competitive</option>
+                <option value="COLLEGE">🎓 College</option>
+              </select>
+            </div>
+
+            <!-- Exam Name -->
+            <div class="form-group" id="examGroup">
+              <label class="form-label" for="taskExam">Exam Name</label>
+              <input class="form-input" type="text" id="taskExam" placeholder="e.g. GATE, UPSC, NIMCET">
+            </div>
+
+            <!-- Due Date -->
+            <div class="form-group">
+              <label class="form-label" for="taskDue">Due Date <span class="required">*</span></label>
+              <input class="form-input" type="date" id="taskDue" required>
+            </div>
+
+            <!-- Estimated Hours -->
+            <div class="form-group">
+              <label class="form-label" for="taskHours">Est. Hours</label>
+              <input class="form-input" type="number" id="taskHours" min="0.5" max="100" step="0.5" placeholder="e.g. 3">
+            </div>
+
+            <!-- Difficulty -->
+            <div class="form-group">
+              <label class="form-label">Difficulty <span class="required">*</span></label>
+              <div class="difficulty-selector" id="difficultySelector">
+                <button type="button" class="diff-btn" data-val="1" onclick="setDifficulty(1)">1</button>
+                <button type="button" class="diff-btn" data-val="2" onclick="setDifficulty(2)">2</button>
+                <button type="button" class="diff-btn" data-val="3" onclick="setDifficulty(3)">3</button>
+                <button type="button" class="diff-btn" data-val="4" onclick="setDifficulty(4)">4</button>
+                <button type="button" class="diff-btn" data-val="5" onclick="setDifficulty(5)">5</button>
+              </div>
+            </div>
+
+            <!-- Weight -->
+            <div class="form-group">
+              <label class="form-label">Weight (Importance) <span class="required">*</span></label>
+              <div class="weight-container">
+                <input class="weight-slider" type="range" id="taskWeight" min="1" max="100" value="50" oninput="updateWeightDisplay()">
+                <span class="weight-value" id="weightDisplay">50</span>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-submit" id="submitBtn" onclick="handleSubmit(event)">
+          <span class="material-icons-round">check</span> Add Task
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toastEl"></div>
+
+  <script>
+    const API_URL = '/api/prioritize';
+    const API_ASSIGNMENTS = '/api/assignments';
+    let selectedDifficulty = 0;
+
+    // ── Modal Controls ──
+    function openModal() {
+      document.getElementById('modalOverlay').classList.add('open');
+      document.getElementById('taskTitle').focus();
+      // Set default date to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 7);
+      document.getElementById('taskDue').value = tomorrow.toISOString().split('T')[0];
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('open');
+      resetForm();
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('modalOverlay')) closeModal();
+    }
+
+    function handleTrackChange() {
+      const track = document.getElementById('taskTrack').value;
+      const examGroup = document.getElementById('examGroup');
+      if (track === 'COLLEGE') {
+        examGroup.style.opacity = '0.4';
+        document.getElementById('taskExam').value = '';
+        document.getElementById('taskExam').disabled = true;
+      } else {
+        examGroup.style.opacity = '1';
+        document.getElementById('taskExam').disabled = false;
+      }
+    }
+
+    function setDifficulty(val) {
+      selectedDifficulty = val;
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.val) <= val);
+      });
+    }
+
+    function updateWeightDisplay() {
+      document.getElementById('weightDisplay').textContent = document.getElementById('taskWeight').value;
+    }
+
+    function resetForm() {
+      document.getElementById('addTaskForm').reset();
+      selectedDifficulty = 0;
+      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('weightDisplay').textContent = '50';
+      document.getElementById('examGroup').style.opacity = '1';
+      document.getElementById('taskExam').disabled = false;
+    }
+
+    // ── Submit ──
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('taskTitle').value.trim();
+      const track = document.getElementById('taskTrack').value;
+      const exam_name = document.getElementById('taskExam').value.trim() || null;
+      const due_date = document.getElementById('taskDue').value;
+      const estimated_hours = parseFloat(document.getElementById('taskHours').value) || null;
+      const weight = parseInt(document.getElementById('taskWeight').value);
+      const difficulty = selectedDifficulty;
+
+      if (!title || !track || !due_date) { showToast('Please fill all required fields', 'error'); return; }
+      if (!difficulty) { showToast('Please select a difficulty level', 'error'); return; }
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="material-icons-round" style="animation:spin 0.8s linear infinite">refresh</span> Adding...';
+
+      try {
+        const res = await fetch(API_ASSIGNMENTS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, track, exam_name, weight, difficulty, due_date, estimated_hours })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to add task');
+
+        showToast(`✅ "${title}" added successfully!`, 'success');
+        closeModal();
+        loadData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="material-icons-round">check</span> Add Task';
+      }
+    }
+
+    // ── Delete Task ──
+    async function deleteTask(id, title) {
+      if (!confirm(`Delete "${title}"?`)) return;
+      try {
+        const res = await fetch(`${API_ASSIGNMENTS}/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete');
+        showToast(`🗑️ "${title}" deleted`, 'success');
+        loadData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // ── Load Data ──
+    async function loadData() {
+      const tasksList = document.getElementById('tasksList');
+      const refreshIcon = document.querySelector('#refreshBtn .material-icons-round');
+      refreshIcon.style.transform = 'rotate(360deg)';
+      setTimeout(() => { refreshIcon.style.transform = ''; }, 600);
+
+      try {
+        const res = await fetch(API_URL);
+        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        const json = await res.json();
+        const tasks = json.data || [];
+        updateStats(tasks);
+        renderTasks(tasks);
+      } catch (err) {
+        showToast(err.message, 'error');
+        tasksList.innerHTML = `<div class="empty-state"><span class="material-icons-round">cloud_off</span><p>Failed to load tasks. Is the server running?</p></div>`;
+      }
+    }
+
+    function updateStats(tasks) {
+      const total = tasks.length;
+      const competitive = tasks.filter(t => t.track === 'COMPETITIVE').length;
+      const college = tasks.filter(t => t.track === 'COLLEGE').length;
+      const now = new Date();
+      const urgent = tasks.filter(t => {
+        const due = new Date(t.due_date);
+        const hoursLeft = (due - now) / (1000 * 60 * 60);
+        return hoursLeft <= 72 && hoursLeft > 0;
+      }).length;
+      const overdue = tasks.filter(t => new Date(t.due_date) < now).length;
+
+      animateCounter('totalTasks', total);
+      animateCounter('competitiveTasks', competitive);
+      animateCounter('collegeTasks', college);
+      animateCounter('urgentTasks', urgent + overdue);
+    }
+
+    function animateCounter(id, target) {
+      const el = document.getElementById(id);
+      let current = 0;
+      const step = Math.max(1, Math.ceil(target / 20));
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) { current = target; clearInterval(timer); }
+        el.textContent = current;
+      }, 40);
+    }
+
+    function renderTasks(tasks) {
+      const tasksList = document.getElementById('tasksList');
+      if (tasks.length === 0) {
+        tasksList.innerHTML = `
+          <div class="empty-state">
+            <span class="material-icons-round">inbox</span>
+            <p>No tasks yet! Click <strong>Add Task</strong> to get started.</p>
+          </div>`;
+        return;
+      }
+
+      const maxScore = Math.max(...tasks.map(t => t.priority_score === 9999 ? 0 : t.priority_score), 1);
+
+      tasksList.innerHTML = tasks.map((task, i) => {
+        const now = new Date();
+        const due = new Date(task.due_date);
+        const hoursLeft = Math.max(0, (due - now) / (1000 * 60 * 60));
+        const daysLeft = Math.floor(hoursLeft / 24);
+        const isOverdue = due < now;
+
+        const trackClass = task.track.toLowerCase();
+        const cardClass = isOverdue ? 'overdue' : trackClass;
+
+        const scoreDisplay = task.priority_score === 9999 ? 'OD' : task.priority_score;
+        let level = 'low';
+        if (task.priority_score >= 2 || task.priority_score === 9999) level = 'high';
+        else if (task.priority_score >= 0.8) level = 'medium';
+        const barWidth = task.priority_score === 9999 ? 100 : Math.min(100, (task.priority_score / maxScore) * 100);
+
+        let dueText = '', dueClass = '';
+        if (isOverdue) { dueText='Overdue!'; dueClass='urgent'; }
+        else if (daysLeft === 0) { dueText=`${Math.ceil(hoursLeft)}h left`; dueClass='urgent'; }
+        else if (daysLeft <= 3) { dueText=`${daysLeft}d left`; dueClass='soon'; }
+        else { dueText=`${daysLeft} days left`; }
+
+        const stars = Array.from({length:5},(_,j)=>`<span class="star ${j<task.difficulty?'filled':''}">★</span>`).join('');
+        const dueDateFormatted = due.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+
+        // Escape title for JS onclick
+        const safeTitle = task.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+        return `
+          <div class="task-card ${cardClass}" style="animation-delay:${0.1+i*0.08}s">
+            <div class="rank-badge">#${i+1}</div>
+            <div class="task-info">
+              <div class="task-title-row">
+                <span class="task-title">${task.title}</span>
+                <span class="track-tag ${trackClass}">${task.track}</span>
+                ${task.exam_name ? `<span class="exam-tag">${task.exam_name}</span>` : ''}
+              </div>
+              <div class="task-meta">
+                <div class="meta-item ${dueClass}">
+                  <span class="material-icons-round">${isOverdue?'warning':'schedule'}</span> ${dueText}
+                </div>
+                <div class="meta-item"><span class="material-icons-round">event</span> ${dueDateFormatted}</div>
+                ${task.estimated_hours ? `<div class="meta-item"><span class="material-icons-round">hourglass_bottom</span> ${task.estimated_hours}h est.</div>` : ''}
+                <div class="meta-item"><div class="difficulty">${stars}</div></div>
+                <div class="meta-item"><span class="material-icons-round">fitness_center</span> Wt: ${task.weight}</div>
+              </div>
+            </div>
+            <div class="priority-section">
+              <div class="priority-label">Priority</div>
+              <div class="priority-score ${level}">${scoreDisplay}</div>
+              <div class="priority-bar-container">
+                <div class="priority-bar ${level}" data-width="${barWidth}"></div>
+              </div>
+            </div>
+            <button class="delete-btn" onclick="deleteTask(${task.id},'${safeTitle}')" title="Delete task">
+              <span class="material-icons-round">delete_outline</span>
+            </button>
+          </div>`;
+      }).join('');
+
+      setTimeout(() => {
+        document.querySelectorAll('.priority-bar').forEach(bar => { bar.style.width = bar.dataset.width + '%'; });
+      }, 100);
+    }
+
+    // ── Toast ──
+    function showToast(msg, type = 'error') {
+      const toast = document.getElementById('toastEl');
+      toast.textContent = msg;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // Keyboard: Escape closes modal
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    setInterval(loadData, 60000);
+    loadData();
+  </script>
+</body>
+</html>
